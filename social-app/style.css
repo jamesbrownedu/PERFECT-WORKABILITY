@@ -1,0 +1,34 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+}
+
+/* MODAL */
+.modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: flex; justify-content: center; align-items: center;
+  background: rgba(0,0,0,0.5);
+}
+.modal-content {
+  background: #fff; padding: 20px; border-radius: 10px;
+}
+
+/* MAIN APP */
+.hidden { display: none; }
+
+header {
+  display: flex; justify-content: space-between; align-items: center;
+  background: #333; color: #fff; padding: 10px;
+}
+header input { width: 300px; padding: 5px; }
+
+main { display: flex; }
+aside { padding: 10px; width: 200px; background: #e0e0e0; }
+#feed { flex: 1; padding: 10px; }
+
+#posts .post {
+  background: #fff; margin: 10px 0; padding: 10px; border-radius: 5px;
+}
