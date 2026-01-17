@@ -1,62 +1,172 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SocialApp</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Photo Social App</title>
+<style>
+:root {
+  --primary: #667eea;
+  --secondary: #764ba2;
+  --bg: #f0f2f5;
+  --card-bg: #fff;
+  --text: #333;
+  --muted: #777;
+}
+* { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+body { margin:0; background: var(--bg); }
+header { background: var(--primary); color: white; text-align:center; padding: 20px; font-size: 28px; font-weight:bold; }
+.container { max-width:900px; margin: 20px auto; padding:0 20px; }
+.card { background: var(--card-bg); padding:15px; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.1); margin-bottom:20px; }
+input, textarea { width:100%; padding:12px; margin:6px 0; border-radius:8px; border:1px solid #ccc; font-size:16px; }
+button { background: var(--primary); color:white; padding:12px; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:16px; margin-top:6px; }
+button:hover { background: var(--secondary); }
+.hidden { display:none; }
+.status { margin-top:10px; font-weight:bold; color: var(--muted); }
+.profile-pic { width:60px; height:60px; border-radius:50%; object-fit:cover; margin-right:10px; vertical-align:middle; }
+.feed img { max-width:100%; margin-top:10px; border-radius:8px; }
+h2 { margin-top:0; color: var(--text); }
+.flex { display:flex; align-items:center; }
+.flex-space { display:flex; justify-content:space-between; align-items:center; }
+</style>
 </head>
 <body>
-  <!-- LOGIN / SIGNUP MODAL -->
-  <div id="auth-modal" class="modal">
-    <div class="modal-content">
-      <h2>Welcome to SocialApp</h2>
-      <input type="text" id="username" placeholder="Username">
-      <input type="password" id="password" placeholder="Password">
-      <button id="login-btn">Login</button>
-      <button id="signup-btn">Sign Up</button>
-      <p id="auth-msg"></p>
+
+<header>📸 Photo Social App</header>
+<div class="container">
+
+<!-- AUTH -->
+<div id="auth-container" class="card">
+  <h2>Login</h2>
+  <input type="text" id="login-username" placeholder="Username">
+  <input type="password" id="login-password" placeholder="Password">
+  <button onclick="login()">Login</button>
+
+  <h2>Sign Up</h2>
+  <input type="text" id="signup-username" placeholder="Username">
+  <input type="password" id="signup-password" placeholder="Password">
+  <button onclick="signup()">Sign Up</button>
+
+  <div id="auth-status" class="status"></div>
+</div>
+
+<!-- APP -->
+<div id="app-container" class="hidden">
+
+  <!-- User Info -->
+  <div class="card flex-space">
+    <div class="flex">
+      <img id="profile-pic" class="profile-pic" src="" alt="Profile">
+      <div>
+        <div id="profile-display"></div>
+        <div id="profile-bio" style="color: var(--muted); font-size:14px;"></div>
+      </div>
     </div>
+    <button onclick="logout()">Logout</button>
   </div>
 
-  <!-- MAIN APP -->
-  <div id="app" class="hidden">
-    <header>
-      <h1>SocialApp</h1>
-      <input type="text" id="search-bar" placeholder="Search users or posts...">
-      <button id="logout-btn">Logout</button>
-      <div id="notif-icon">🔔<span id="notif-count">0</span></div>
-    </header>
-
-    <main>
-      <aside id="profile-sidebar">
-        <h3>Profile</h3>
-        <img id="profile-pic" src="images/default.png" alt="Profile Picture">
-        <p id="display-name"></p>
-        <p id="bio"></p>
-        <button id="edit-profile-btn">Edit Profile</button>
-      </aside>
-
-      <section id="feed">
-        <h2>Feed</h2>
-        <div id="posts"></div>
-        <div id="upload-section">
-          <input type="file" id="image-upload">
-          <input type="text" id="image-desc" placeholder="Description">
-          <button id="upload-btn">Upload</button>
-        </div>
-      </section>
-
-      <aside id="chat-sidebar">
-        <h3>Friends & DMs</h3>
-        <ul id="friends-list"></ul>
-        <button id="new-chat-btn">New Chat</button>
-      </aside>
-    </main>
+  <!-- Upload Photo -->
+  <div class="card">
+    <h2>Upload Photo</h2>
+    <input type="file" id="photo-file">
+    <textarea id="photo-desc" placeholder="Description (optional)"></textarea>
+    <button onclick="uploadPhoto()">Upload</button>
+    <div id="upload-status" class="status"></div>
   </div>
 
-  <script src="utils.js"></script>
-  <script src="data.js"></script>
-  <script src="app.js"></script>
+  <!-- Feed -->
+  <div id="feed" class="feed"></div>
+
+</div>
+
+<script>
+// --------- LocalStorage Setup ----------
+if(!localStorage.getItem('users')) localStorage.setItem('users', JSON.stringify([]));
+if(!localStorage.getItem('photos')) localStorage.setItem('photos', JSON.stringify([]));
+
+let currentUser = null;
+
+// --------- Helper Functions ----------
+function getUsers(){ return JSON.parse(localStorage.getItem('users')); }
+function saveUsers(u){ localStorage.setItem('users', JSON.stringify(u)); }
+function getPhotos(){ return JSON.parse(localStorage.getItem('photos')); }
+function savePhotos(p){ localStorage.setItem('photos', JSON.stringify(p)); }
+
+// --------- Auth Functions ----------
+function signup(){
+  const u = document.getElementById('signup-username').value.trim();
+  const p = document.getElementById('signup-password').value.trim();
+  const status = document.getElementById('auth-status');
+  if(!u||!p){ status.textContent="Enter username and password"; return; }
+  let users = getUsers();
+  if(users.find(x=>x.username===u)){ status.textContent="Username exists"; return; }
+  let newUser = { username:u, password:p, display:u, bio:"", pic:"", role:(u==='jamesb22'?'owner':'user') };
+  users.push(newUser); saveUsers(users);
+  status.textContent = "Signup successful! You can now login.";
+}
+function login(){
+  const u = document.getElementById('login-username').value.trim();
+  const p = document.getElementById('login-password').value.trim();
+  const status = document.getElementById('auth-status');
+  let users = getUsers();
+  let user = users.find(x=>x.username===u && x.password===p);
+  if(!user){ status.textContent="Invalid credentials"; return; }
+  currentUser = user;
+  document.getElementById('auth-container').classList.add('hidden');
+  document.getElementById('app-container').classList.remove('hidden');
+  renderProfile();
+  renderFeed();
+}
+
+// --------- Logout ----------
+function logout(){ currentUser=null; document.getElementById('auth-container').classList.remove('hidden'); document.getElementById('app-container').classList.add('hidden'); }
+
+// --------- Profile ----------
+function renderProfile(){
+  document.getElementById('profile-display').textContent = currentUser.display;
+  document.getElementById('profile-bio').textContent = currentUser.bio;
+  document.getElementById('profile-pic').src = currentUser.pic || 'https://via.placeholder.com/60';
+}
+
+// --------- Upload ----------
+function uploadPhoto(){
+  const fileInput = document.getElementById('photo-file');
+  const desc = document.getElementById('photo-desc').value.trim();
+  const status = document.getElementById('upload-status');
+  if(!fileInput.files[0]){ status.textContent="Select a file"; return; }
+
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const photos = getPhotos();
+    photos.push({user:currentUser.username, img:e.target.result, desc:desc, date:Date.now()});
+    savePhotos(photos);
+    status.textContent="Upload successful!";
+    fileInput.value=""; document.getElementById('photo-desc').value="";
+    renderFeed();
+  }
+  reader.readAsDataURL(fileInput.files[0]);
+}
+
+// --------- Feed ----------
+function renderFeed(){
+  const feed = document.getElementById('feed');
+  const photos = getPhotos().slice().reverse(); // latest first
+  feed.innerHTML="";
+  photos.forEach(p=>{
+    const card = document.createElement('div');
+    card.className="card";
+    card.innerHTML = `
+      <div class="flex">
+        <img class="profile-pic" src="${getUsers().find(u=>u.username===p.user)?.pic || 'https://via.placeholder.com/60'}">
+        <strong>${p.user}</strong>
+      </div>
+      ${p.desc?'<p>'+p.desc+'</p>':''}
+      <img src="${p.img}">
+    `;
+    feed.appendChild(card);
+  });
+}
+</script>
+
 </body>
 </html>
