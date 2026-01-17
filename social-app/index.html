@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SocialApp</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- LOGIN / SIGNUP MODAL -->
+  <div id="auth-modal" class="modal">
+    <div class="modal-content">
+      <h2>Welcome to SocialApp</h2>
+      <input type="text" id="username" placeholder="Username">
+      <input type="password" id="password" placeholder="Password">
+      <button id="login-btn">Login</button>
+      <button id="signup-btn">Sign Up</button>
+      <p id="auth-msg"></p>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="app" class="hidden">
+    <header>
+      <h1>SocialApp</h1>
+      <input type="text" id="search-bar" placeholder="Search users or posts...">
+      <button id="logout-btn">Logout</button>
+      <div id="notif-icon">🔔<span id="notif-count">0</span></div>
+    </header>
+
+    <main>
+      <aside id="profile-sidebar">
+        <h3>Profile</h3>
+        <img id="profile-pic" src="images/default.png" alt="Profile Picture">
+        <p id="display-name"></p>
+        <p id="bio"></p>
+        <button id="edit-profile-btn">Edit Profile</button>
+      </aside>
+
+      <section id="feed">
+        <h2>Feed</h2>
+        <div id="posts"></div>
+        <div id="upload-section">
+          <input type="file" id="image-upload">
+          <input type="text" id="image-desc" placeholder="Description">
+          <button id="upload-btn">Upload</button>
+        </div>
+      </section>
+
+      <aside id="chat-sidebar">
+        <h3>Friends & DMs</h3>
+        <ul id="friends-list"></ul>
+        <button id="new-chat-btn">New Chat</button>
+      </aside>
+    </main>
+  </div>
+
+  <script src="utils.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
